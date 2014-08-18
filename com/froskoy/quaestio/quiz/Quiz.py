@@ -72,7 +72,7 @@ class Quiz(object):
         
     def __toJsonDict(self):
         description = self.__description if (self.__description is not None) else ""
-        return {'jsonversion' : self.__jsonReprVersion,
+        return {'quizencodingversion' : self.__jsonReprVersion,
                 'name'        : self.__name,
                 'description' : description,
                 'questions'   : map(lambda x : x.toJsonDict(), self.__questions)
@@ -82,7 +82,7 @@ class Quiz(object):
         if (not isinstance(quizDict, dict)):
             # TODO: could do with running quizDict through a validator... again...
             raise ValueError("Must be called with a dictionary.")
-        if (quizDict['jsonversion'] != self.__jsonReprVersion):
+        if (quizDict['quizencodingversion'] != self.__jsonReprVersion):
             raise UnsupportedQuizVersionError("Quiz JSON representation version "+str(self.__jsonReprVersion)+" is not supported.")
         self.__name = quizDict['name']
         self.__description = quizDict['description'] if (quizDict['description'] != "") else None 

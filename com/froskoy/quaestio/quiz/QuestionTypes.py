@@ -4,8 +4,8 @@ Created on 17 Aug 2014
 @author: matthew
 '''
 
-from MultipleChoiceQuestion import MultipleChoiceQuestion
+import MultipleChoiceQuestion as MCQ
 
 def map(questionType):
-    if (questionType == MultipleChoiceQuestion):
+    if (questionType == MCQ.MultipleChoiceQuestion):
         return 'multiplechoice'

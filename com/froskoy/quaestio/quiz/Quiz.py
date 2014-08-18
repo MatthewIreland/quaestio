@@ -6,7 +6,9 @@ Created on 16 Aug 2014
 
 import json
 from Question import Question
+import QuestionTypes
 from TrueFalseQuestion import TrueFalseQuestion
+from MultipleChoiceQuestion import MultipleChoiceQuestion
 from com.froskoy.quaestio.jsonSerializing.UnsupportedQuizVersionError import UnsupportedQuizVersionError
 from com.froskoy.quaestio.jsonSerializing.UnsupportedQuestionTypeError import UnsupportedQuestionTypeError
 
@@ -48,10 +50,10 @@ class Quiz(object):
         elif (isinstance(question, dict)):
             # construct appropriate Question subclass based on type of question
             # types based on those supported by Moodle XML
-            if (question['type'] == 'truefalse'):
+            if (question['type'] == 'truefalse'):  # TODO update to mapped version
                 newQuestion = TrueFalseQuestion(jsonDict=question)
-            elif (question['type'] == 'multichoice'):
-                raise NotImplementedError()
+            elif (question['type'] == QuestionTypes.map(MultipleChoiceQuestion)):
+                newQuestion = MultipleChoiceQuestion(jsonDict=question)
             elif (question['type'] == 'shortanswer'):
                 raise NotImplementedError()
             elif (question['type'] == 'matching'):

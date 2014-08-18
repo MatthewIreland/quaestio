@@ -12,7 +12,7 @@ __MODE_DEBUG__   = 1
 ##### END DECLARATION OF GLOBALS
 
 ##### TOKEN DELCARATIONS
-tokens = ("QTITLE",
+tokens = ("QTITLEMARKER",
           "COMMENT",
           "WHITESPACE",
           "NEWLINE",
@@ -24,6 +24,7 @@ tokens = ("QTITLE",
           "ANSWERWRONGMARKER",
           "ANSWERMATCHER",
           "NUMERIC",
+          "NUMERICRANGE",
           "FEEDBACKMARKER",
           "CREDITMARKER"
           )
@@ -43,12 +44,8 @@ def t_COMMENT(t):
     t.lexer.lineno += len(t.value)
     return t
     
-def t_QTITLE(t):
-    r"::[\s\S]+\n\ *::"
-    if "\n" in t.value:
-        t.lexer.lineno += len(t.value)
-        t.value.replace("\n","")
-    t.value = t.value.strip("::").strip(" ")
+def t_QTITLEMARKER(t):
+    r"::"
     return t
     
 def t_WHITESPACE(t):
@@ -56,7 +53,13 @@ def t_WHITESPACE(t):
     return t
     
 def t_NUMERICRANGE(t):
-    r"\.\."
+    # both ints |left is not int|rght is not int| both are fractions
+    r"\d+\.\.\d+|\d+\.\d+\.\.\d+|\d+\.\.\d+\.\d+|\d+\.\d+\.\.\d+\.\d+"
+    parts = t.value.split("..")
+    t.lowervalue=parts[0]
+    t.uppervalue=parts[1]
+    if __MODE_DEBUG__:
+        print "NUMERIC RANGE: " + str(t.lowervalue) + " to " + str(t.uppervalue) 
     return t
 
 def t_ANSWERNUMERICOPEN(t):
@@ -73,11 +76,14 @@ def t_CREDITMARKER(t):
     
 def t_NUMERIC(t):
     r"\d[\d:\.]*"
-    print "NUMERIC: " + t.value
     parts = t.value.split(":")
     t.value = parts[0]
     if (len(parts) > 1):
         t.tolerance = parts[1]
+    else:
+        t.tolerance = 0
+    if __MODE_DEBUG__:
+        print "NUMERIC: " + str(t.value) + " +/- " + str(t.tolerance)
     return t
 
 def t_ANSWEROPEN(t):
@@ -101,10 +107,10 @@ def t_ANSWERMATCHER(t):
     return t
     
 def t_STRING(t):
-    # can contain whitespace, but can't start or end with whitespace
+    # can't contain whitespace
     # can't contain unescaped hyphens
     #r"[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]|[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!][a-zA-Z0-9_@\.,@<>():'\ \\\"\+\*=?!]*[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]"
-    r"[a-zA-Z0-9\ \+=]+"
+    r"[a-zA-Z0-9\+\*='?!,\.]+"
     return t
 
 def t_NEWLINE(t):
@@ -139,7 +145,7 @@ def lexGift(giftStr):
     while True:
         tok = lexer.token()
         if not tok: break      # No more input
-        print tok
+        #print tok
             
             
             
@@ -162,6 +168,9 @@ if __name__ == '__main__':
 
 // math range question -- note: {#1..5} is the same range
 ::Q5:: What is a number from 1 to 5? {#3:2}
+
+// another math range question
+::Q5.5:: What is a number from 1 to 5? {#1..5}
 
 // multiple numeric answers with partial credit and feedback
 ::Q7:: When was Ulysses S. Grant born? {#

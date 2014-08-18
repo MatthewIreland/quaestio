@@ -9,6 +9,7 @@ from Question import Question
 import QuestionTypes
 from TrueFalseQuestion import TrueFalseQuestion
 from MultipleChoiceQuestion import MultipleChoiceQuestion
+from ShortAnswerQuestion import ShortAnswerQuestion
 from com.froskoy.quaestio.jsonSerializing.UnsupportedQuizVersionError import UnsupportedQuizVersionError
 from com.froskoy.quaestio.jsonSerializing.UnsupportedQuestionTypeError import UnsupportedQuestionTypeError
 
@@ -54,8 +55,8 @@ class Quiz(object):
                 newQuestion = TrueFalseQuestion(jsonDict=question)
             elif (question['type'] == QuestionTypes.map(MultipleChoiceQuestion)):
                 newQuestion = MultipleChoiceQuestion(jsonDict=question)
-            elif (question['type'] == 'shortanswer'):
-                raise NotImplementedError()
+            elif (question['type'] == QuestionTypes.map(ShortAnswerQuestion)):
+                newQuestion = ShortAnswerQuestion(jsonDict=question)
             elif (question['type'] == 'matching'):
                 raise NotImplementedError()
             elif (question['type'] == 'cloze'):

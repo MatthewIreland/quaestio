@@ -29,3 +29,7 @@ class Question(object):
     @abstractmethod
     def markAnswer(self, answer):
         pass
+        
+    def _validateText(self, text):
+        if (not isinstance(text, str)):
+            raise ValueError("Question text must be of type string")

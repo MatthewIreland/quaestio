@@ -12,7 +12,7 @@ class Answer(object):
     '''
     __metaclass__ = ABCMeta
 
-    def __init__(self, params):
+    def __init__(self):
         '''
         Constructor
         '''
@@ -25,3 +25,10 @@ class Answer(object):
     def toJsonDict(self):
         pass
     
+    def _validateFraction(self, fraction):
+        if ((not isinstance(fraction, int)) | fraction<0 | fraction>100):
+            raise ValueError("Correct must be of type int (between 0 and 100")
+        
+    def _validateText(self, text):
+        if (not isinstance(text, str)):
+            raise ValueError("Question text must be of type string")

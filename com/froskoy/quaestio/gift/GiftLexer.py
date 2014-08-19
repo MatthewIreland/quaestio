@@ -75,7 +75,7 @@ def t_CREDITMARKER(t):
     return t
     
 def t_NUMERIC(t):
-    r"\d[\d:\.]*"
+    r"[\d:\.]*\d"
     parts = t.value.split(":")
     t.value = parts[0]
     if (len(parts) > 1):

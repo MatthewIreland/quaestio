@@ -18,6 +18,7 @@ tokens = ("QTITLEMARKER",
           "NEWLINE",
           "WORD",
           "ANSWEROPEN",
+          "MULTICHOICEANSWEROPEN",
           "ANSWERNUMERICOPEN",
           "ANSWERCLOSE",
           "ANSWERCORRECTMARKER",
@@ -87,6 +88,10 @@ def t_NUMERIC(t):
         print "NUMERIC: " + str(t.value) + " +/- " + str(t.tolerance)
     return t
 
+def t_MULTICHOICEANSWEROPEN(t):
+    r"{m"
+    return t
+
 def t_ANSWEROPEN(t):
     r"{"
     return t
@@ -109,7 +114,7 @@ def t_ANSWERMATCHER(t):
     
 def t_WORD(t):
     #r"[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]|[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!][a-zA-Z0-9_@\.,@<>():'\ \\\"\+\*=?!]*[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]"
-    r"[^\s:{}]+"
+    r"[^\s:{}]+"  # TODO don't include # either
     return t
 
 def t_NEWLINE(t):
@@ -192,4 +197,26 @@ if __name__ == '__main__':
 }"""
     testStr2 ="""// true-false
 ::Q1:: 1+1=2 {T}            // comments are okay here"""
-    lexGift(testStr)
+
+    testStr3="""// true-false
+::Q1:: 1+1=2 {T}
+::Q2:: select true as th3 answer 4 this question{T}
+
+::Q3::Select false as the answer for th1s qu3st1on { F }
+::Q4:: select true {TRUE}
+::Q5:: select false { FALSE }
+
+// multiple choice question
+select four correct answers {m =this one is correct = this one is also correct ~this one is wrong ~ so is this one =this one is correct again ~ this one is wrong again = this one is the final correct answer ~and the final wrong one is here }
+
+// multiple choice with specific feedback
+::Q7:: What's between orange and green in the spectrum?
+{m=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+// multiple choice question with varied feedback
+::Q8:: What's betw33n or4nge and green 1n the spectrum?
+{m=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+"""
+
+
+    lexGift(testStr3)

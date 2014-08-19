@@ -17,6 +17,8 @@ class MultipleChoiceQuestionAnswer(Answer):
     def __init__(self, text="", fraction=0, selectedFeedback=None, notSelectedFeedback=None, penalty=0, hidden=0, jsonDict=None):
         '''
         Constructor
+        Selected feedback used as a "default" for generic feedback.
+        fraction = 100 => a correct answer
         '''
         if (jsonDict is None):
             if (not isinstance(text, str)):

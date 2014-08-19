@@ -42,7 +42,8 @@ def t_COMMENT(t):
     r"//.*\n{0,1}"
     t.value = t.value.strip("\n").strip("//").strip(" ")
     t.lexer.lineno += len(t.value)
-    return t
+    # discard comment, for the time being
+    #return t
     
 def t_QTITLEMARKER(t):
     r"::"

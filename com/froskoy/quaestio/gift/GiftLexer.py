@@ -16,7 +16,7 @@ tokens = ("QTITLEMARKER",
           "COMMENT",
           "WHITESPACE",
           "NEWLINE",
-          "STRING",
+          "WORD",
           "ANSWEROPEN",
           "ANSWERNUMERICOPEN",
           "ANSWERCLOSE",
@@ -106,11 +106,9 @@ def t_ANSWERMATCHER(t):
     r"\->"
     return t
     
-def t_STRING(t):
-    # can't contain whitespace
-    # can't contain unescaped hyphens
+def t_WORD(t):
     #r"[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]|[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!][a-zA-Z0-9_@\.,@<>():'\ \\\"\+\*=?!]*[a-zA-Z0-9_@\.,@<>():'\\\"\+\*=?!]"
-    r"[a-zA-Z0-9\+\*='?!,\.]+"
+    r"[^\s:{}]+"
     return t
 
 def t_NEWLINE(t):
@@ -145,7 +143,7 @@ def lexGift(giftStr):
     while True:
         tok = lexer.token()
         if not tok: break      # No more input
-        #print tok
+        print tok
             
             
             

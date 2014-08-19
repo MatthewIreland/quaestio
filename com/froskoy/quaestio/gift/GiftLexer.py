@@ -118,7 +118,7 @@ def t_NEWLINE(t):
     return t
     
 def t_error(t):
-    raise TypeError("Unknown text '%s'" % (t.value))
+    raise TypeError("Unknown text at line %d '%s'" % (t.lexer.lineno, t.value))
 
 # ignore tabs
 t_ignore = '\t'

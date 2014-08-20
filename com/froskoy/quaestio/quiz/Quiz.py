@@ -73,6 +73,13 @@ class Quiz(object):
             raise ValueError("Question must subclass Question or be of dictionary type.")
         self.__questions.append(newQuestion)
         
+    def toGiftString(self):
+        giftStr = ""
+        for question in self.__questions:
+            giftStr += question.toGiftString()
+            giftStr += "\n\n"
+        return giftStr
+        
     def __toJsonDict(self):
         description = self.__description if (self.__description is not None) else ""
         return {'quizencodingversion' : self.__jsonReprVersion,

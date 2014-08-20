@@ -57,3 +57,20 @@ class MultipleChoiceQuestionAnswer(Answer):
                 'penalty'             : self.__penalty,
                 'hidden'              : self.__hidden}
         
+    def toGiftString(self):
+        """
+        Note: Partial credit not yet supported.
+        """
+        giftStr = ""
+        if (self.__fraction == 100): 
+            giftStr = "="
+        elif (self.__fraction == 0):
+            giftStr = "~"
+        else:
+            raise NotImplementedError()
+        giftStr += self.__text
+        if (self.__selectedFeedback is not None):
+            giftStr += " # "
+            giftStr += self.__selectedFeedback
+        return giftStr
+        

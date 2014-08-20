@@ -67,6 +67,15 @@ class MultipleChoiceQuestion(Question):
     
     def markAnswer(self):
         raise NotImplementedError() 
+    
+    def toGiftString(self):
+        giftStr = super(MultipleChoiceQuestion, self).toGiftString()
+        giftStr += " {m "
+        for answer in self.__answers:
+            giftStr += answer.toGiftString()
+            giftStr += "\n"
+        giftStr += "}"
+        return giftStr
 
     def __validateAnswerNumbering(self, answerNumbering):
         if (not answerNumbering in ['none', 'abc', 'ABCD', '123']):

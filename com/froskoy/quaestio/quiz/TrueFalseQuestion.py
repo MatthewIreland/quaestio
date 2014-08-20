@@ -73,6 +73,7 @@ class TrueFalseQuestion(Question):
               or partial credit.
         """
         giftStr = super(TrueFalseQuestion, self).toGiftString()
+        giftStr += " {"
         if (self.__isTrue):
             giftStr += "T"
         else:

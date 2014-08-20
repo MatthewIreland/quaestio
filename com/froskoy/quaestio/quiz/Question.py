@@ -28,8 +28,7 @@ class Question(object):
 
     def toGiftString(self):
         """
-        Prints question title, text and opening answer bracket to the
-        string returned.
+        Prints question title and text to the string returned.
         """
         giftStr = ""
         if self._name is not None:
@@ -38,7 +37,6 @@ class Question(object):
             giftStr = ""
         if self._questionText is not None:
             giftStr += self._questionText
-        giftStr += " {"
         return giftStr
         
     @abstractmethod

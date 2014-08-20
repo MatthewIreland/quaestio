@@ -218,5 +218,8 @@ select four correct answers {m =this one is correct = this one is also correct ~
 {m=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
 """
 
+    testStr5 = """::Q7:: What's between orange and green in the spectrum?
+{=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}"""
 
-    lexGift(testStr3)
+
+    lexGift(testStr5)

@@ -6,11 +6,14 @@ Created on 16 Aug 2014
 
 import ply.yacc as yacc
 import GiftLexer
+from GiftParseError import GiftParseError
 from com.froskoy.quaestio.quiz.Quiz import Quiz
 from com.froskoy.quaestio.quiz.TrueFalseQuestion import TrueFalseQuestion
 from com.froskoy.quaestio.quiz.TrueFalseQuestionAnswer import TrueFalseQuestionAnswer
 from com.froskoy.quaestio.quiz.MultipleChoiceQuestion import MultipleChoiceQuestion
 from com.froskoy.quaestio.quiz.MultipleChoiceQuestionAnswer import MultipleChoiceQuestionAnswer
+from com.froskoy.quaestio.quiz.ShortAnswerQuestion import ShortAnswerQuestion
+from com.froskoy.quaestio.quiz.ShortAnswerQuestionAnswer import ShortAnswerQuestionAnswer
 from GiftLexer import tokens
 
 ##### DEFINITION OF GLOBALS
@@ -51,6 +54,12 @@ class ParserMultiChoiceQuestionBody:
         # TODO: appropriate type checks
         self.text   = text
         self.answers = answers
+        
+class ParserShortAnswerQuestionBody:
+    def __init__(self, text, answers):
+        # TODO: appropriate type checks
+        self.text   = text
+        self.answers = answers
 
 def parserAddQuestion(question):
     print "Adding question!!!"
@@ -71,13 +80,20 @@ def parserConstructQuestion(name=None, questionBody=None):
     if (questionBody.__class__ == ParserMultiChoiceQuestionBody):
         return MultipleChoiceQuestion(questionText=questionBody.text,
                                       answers=questionBody.answers,
-                                      name=None,
+                                      name=name,
                                       single=None,
                                       shuffleAnswers=0,
                                       correctFeedback=None,
                                       partiallyCorrectFeedback=None,
                                       incorrectFeedback=None,
                                       answerNumbering="none")
+    if (questionBody.__class__ == ParserShortAnswerQuestionBody):
+        return ShortAnswerQuestion(questionText=questionBody.text,
+                                   answers=questionBody.answers,
+                                   name=name,
+                                   feedback=None,
+                                   hidden=0,
+                                   usecase=0)
     raise ValueError("question class unrecognised")
 
 ##### End Internal class and method definitions
@@ -120,20 +136,15 @@ def p_question_noname(p):
         
 def p_questionname(p):
     'questionname : QTITLEMARKER optionalwhitespace string optionalwhitespace QTITLEMARKER' 
-    p[0] = p[3]
+    p[0] = p[3].strip(" ")
 
 def p_questionbody(p):
     """questionbody : truefalsequestionbody
-                    | multiplechoicequestionbody"""
+                    | multiplechoicequestionbody
+                    | shortanswerquestionbody"""
     p[0] = p[1]
 
 """    
-def p_questionbody_multiplechoice(p):
-    'questionbody : multiplechoicequestionbody'
-    
-def p_questionbody_shortanswer(p):
-    'questionbody : shortanswerquestionbody'
-    
 def p_questionbody_missingword(p):
     'questionbody : missingwordquestionbody'
     
@@ -186,7 +197,7 @@ def p_truefalsequestionbody_leadingtextnumeralwhitespace(p):
 
 ## multiple choice question 
 def p_multiplechoicequestionbody(p):
-    'multiplechoicequestionbody : string optionalwhitespace MULTICHOICEANSWEROPEN multichoiceanswers ANSWERCLOSE'
+    'multiplechoicequestionbody : string optionalwhitespace MULTICHOICEANSWEROPEN multichoiceanswers optionalwhitespace ANSWERCLOSE'
     if __MODE_DEBUG__:
         print "Multiple choice question."
     #p[0] = ParserMultiChoiceQuestionBody(text=p[1], answers=p[4])
@@ -195,7 +206,7 @@ def p_multiplechoicequestionbody(p):
     parserAnswers=[]
 
 def p_multiplechoicequestionbody_leadingtextnumeral(p):
-    'multiplechoicequestionbody : NUMERIC string optionalwhitespace MULTICHOICEANSWEROPEN multichoiceanswers ANSWERCLOSE'
+    'multiplechoicequestionbody : NUMERIC string optionalwhitespace MULTICHOICEANSWEROPEN multichoiceanswers optionalwhitespace ANSWERCLOSE'
     if __MODE_DEBUG__:
         print "Multiple choice question (with leading numeral)."
     questiontext=str(p[1])+p[2]        # TODO proper communication with lexer i.e. extract value NOT tolerance
@@ -230,26 +241,90 @@ def p_multichoiceanswer(p):
     p[0] = p[1]
     
 def p_multichoicecorrectanswer(p):
-    'multichoicecorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring'
+    'multichoicecorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring linegap'
     p[0] = MultipleChoiceQuestionAnswer(text=p[3].strip(" "), fraction=100, selectedFeedback=None)
     parserAnswers.append(p[0])   # TODO remove
     
 def p_multichoicecorrectanswer_withfeedback(p):
-    'multichoicecorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback'
+    'multichoicecorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback linegap'
     p[0] = MultipleChoiceQuestionAnswer(text=p[3].strip(" "), fraction=100, selectedFeedback=p[5].strip(" "))
     parserAnswers.append(p[0])   # TODO remove
     
 def p_multichoiceincorrectanswer(p):
-    'multichoiceincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring'
+    'multichoiceincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring linegap'
     p[0] = MultipleChoiceQuestionAnswer(text=p[3].strip(" "), fraction=0, selectedFeedback=None)
     parserAnswers.append(p[0])   # TODO remove
     
 def p_multichoiceincorrectanswer_withfeedback(p):
-    'multichoiceincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback'
+    'multichoiceincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback linegap'
     p[0] = MultipleChoiceQuestionAnswer(text=p[3].strip(" "), fraction=0, selectedFeedback=p[5].strip(" "))
     parserAnswers.append(p[0])   # TODO remove
 
 ## shortanswerquestion
+def p_shortanswerquestionbody(p):
+    'shortanswerquestionbody : string optionalwhitespace ANSWEROPEN shortansweranswers optionalwhitespace ANSWERCLOSE'
+    if __MODE_DEBUG__:
+        print "Short answer question."
+    #p[0] = ParserMultiChoiceQuestionBody(text=p[1], answers=p[4])
+    global parserAnswers
+    p[0] = ParserShortAnswerQuestionBody(text=p[1], answers=parserAnswers)
+    parserAnswers=[]
+
+def p_shortanswerquestionbody_leadingtextnumeral(p):
+    'shortanswerquestionbody : NUMERIC string optionalwhitespace ANSWEROPEN shortansweranswers optionalwhitespace ANSWERCLOSE'
+    if __MODE_DEBUG__:
+        print "Short answer question (with leading numeral)."
+    questiontext=str(p[1])+p[2]        # TODO proper communication with lexer i.e. extract value NOT tolerance
+    #p[0] = ParserShortAnswerQuestionBody(text=questiontext, answers=p[5])
+    global parserAnswers
+    p[0] = ParserShortAnswerQuestionBody(text=questiontext, answers=parserAnswers)
+    parserAnswers=[]
+
+def p_shortanswerquestionbody_leadingtextnumeralwhitespace(p):
+    'shortanswerquestionbody : NUMERIC WHITESPACE string optionalwhitespace ANSWEROPEN shortansweranswers optionalwhitespace ANSWERCLOSE'
+    if __MODE_DEBUG__:
+        print "Short answer question (with leading numeral and whitespace)."
+    questiontext=str(p[1])+" "+p[3]    # TODO proper communication with lexer i.e. extract value NOT tolerance
+    #p[0] = ParserShortAnswerQuestionBody(text=questiontext, answers=p[6])
+    global parserAnswers
+    p[0] = ParserShortAnswerQuestionBody(text=questiontext, answers=parserAnswers)
+    parserAnswers=[]
+
+def p_shortansweranswers(p):
+    'shortansweranswers : optionalwhitespace shortansweranswer linegap shortansweranswers'
+    pass
+    #if p[3] is not None:          # TODO think about this when awake
+    #    p[0] = p[3].append(p[2])
+    #p[0] = parserAnswers             # TODO remove
+    
+def p_shortansweranswers_base(p):
+    'shortansweranswers : optionalwhitespace shortansweranswer linegap'
+    p[0] = [p[2]]
+    
+def p_shortansweranswer(p):
+    """shortansweranswer : shortanswercorrectanswer
+                         | shortanswerincorrectanswer"""
+    p[0] = p[1]
+    
+def p_shortanswercorrectanswer(p):
+    'shortanswercorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring linegap'
+    p[0] = ShortAnswerQuestionAnswer(text=p[3].strip(" "), fraction=100, feedback=None, usecase=0)
+    parserAnswers.append(p[0])   # TODO remove
+    
+def p_shortanswercorrectanswer_withfeedback(p):
+    'shortanswercorrectanswer : ANSWERCORRECTMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback linegap'
+    p[0] = ShortAnswerQuestionAnswer(text=p[3].strip(" "), fraction=100, feedback=p[5].strip(" "), usecase=0)
+    parserAnswers.append(p[0])   # TODO remove
+    
+def p_shortanswerincorrectanswer(p):
+    'shortanswerincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring linegap'
+    p[0] = ShortAnswerQuestionAnswer(text=p[3].strip(" "), fraction=0, feedback=None, usecase=0)
+    parserAnswers.append(p[0])   # TODO remove
+    
+def p_shortanswerincorrectanswer_withfeedback(p):
+    'shortanswerincorrectanswer : ANSWERWRONGMARKER optionalwhitespace answerstring optionalwhitespace answerfeedback linegap'
+    p[0] = ShortAnswerQuestionAnswer(text=p[3].strip(" "), fraction=0, feedback=p[5].strip(" "), usecase=0)
+    parserAnswers.append(p[0])   # TODO remove
 
 
 ## missing word question
@@ -304,8 +379,10 @@ def p_linegap_epsilon(p):
     pass
     
 # errors
-#def p_error(p):
-#    print "Syntax error in input!"
+"""
+def p_error(p):
+    raise GiftParseError("Syntax error in input!")
+"""
 ##### END PARSING RULES
 
 def parseGift(giftStr):
@@ -315,8 +392,10 @@ def parseGift(giftStr):
     
     # ... and parse
     result = parser.parse(giftStr, GiftLexer.lexer)
-    #if result is not None:
-    print result.jsonSerialize()
+    if result is not None:
+        print result.jsonSerialize()
+    else:
+        print("There were errors in the parse.")
     
 """
 Quick test example
@@ -363,16 +442,141 @@ select four correct answers {m =this one is correct = this one is also correct ~
 {m=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
 """
 
-    testStr3 = """::Q7:: What's between orange and green in the spectrum?
-{m =yellow # feedback ~red #multi word feedback ~blue # some more feedback}"""
+    testStr3 = """::Q7:: Type a correct answer
+{ =correct # feedback = a correct answer ~a wrong answer #multi word feedback ~ another wrong answer # some more feedback}"""
 
     testStr4 = """// multiple choice question
-select four correct answers {m =this one is correct = this one is also correct ~this one is wrong ~ so is this one =this one is correct again ~ this one is wrong again = this one is the final correct answer ~and the final wrong one is here}
+this time there are four correct answers { =this one is correct = this one is also correct ~this one is wrong ~ so is this one =this one is correct again ~ this one is wrong again = this one is the final correct answer ~and the final wrong one is here}
+
+// short answer with (more) specific feedback
+::Q7:: What's between orange and green in the spectrum?
+{=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+// multiple choice question with varied feedback
+::Q8:: What's betw33n or4nge and green 1n the spectrum?
+{=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+"""
+    testStr5 = """::Q7:: What's between orange and green in the spectrum?
+{=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}"""
+
+    testStr7 = """// alternate layout for short answer question
+::Title
+:: Question {m
+= Correct answer 1
+= Correct answer 2
+~ Wrong answer 1
+# Response to wrong answer 1
+~ Wrong answer 2
+# Response to wrong answer 2
+}
+"""
+
+    testStr8 = """// true-false
+::Q1:: 1+1=2 {T}            // comments are okay here
 
 // multiple choice with specific feedback
-::Q7:: What's between orange and green in the spectrum?
-{m=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}"""
+::Q2:: What's between orange and green in the spectrum?
+{m=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}
 
-    parseGift(testStr2)
+// short answer question
+::Q3:: Matthew's middle name? {=Timothy = Tim ~James ~Matthew}
+
+// alternate layout for short answer question
+::Title 
+:: Question {
+=Correct answer 1
+=Correct answer 2
+~Wrong answer 1
+#Response to wrong answer 1
+~Wrong answer 2
+#Response to wrong answer 2
+}
+
+::Title
+:: Question {m
+= Correct answer 1
+= Correct answer 2
+~ Wrong answer 1
+# Response to wrong answer 1
+~ Wrong answer 2
+# Response to wrong answer 2
+}
+
+::Title
+:: Question {
+= Correct answer 1
+= Correct answer 2
+~ Wrong answer 1
+# Response to wrong answer 1
+~ Wrong answer 2
+# Response to wrong answer 2
+}
+
+::Title:: Question {
+= Correct answer 1
+= Correct answer 2
+~ Wrong answer 1
+# Response to wrong answer 1
+~ Wrong answer 2
+# Response to wrong answer 2
+}
+
+::Title:: Question {m
+= Correct answer 1
+= Correct answer 2
+~ Wrong answer 1
+# Response to wrong answer 1
+~ Wrong answer 2
+# Response to wrong answer 2
+}
+
+// short answer question
+this time there are four correct answers { =this one is correct = this one is also correct ~this one is wrong ~ so is this one =this one is correct again ~ this one is wrong again = this one is the final correct answer ~and the final wrong one is here}
+
+// short answer with (more) specific feedback
+::Q7:: What's between orange and green in the spectrum?
+{=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+// multiple choice question with varied feedback
+::Q8:: What's betw33n or4nge and green 1n the spectrum?
+{=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+
+// multiple choice question
+this time there are four correct answers {m =this one is correct = this one is also correct ~this one is wrong ~ so is this one =this one is correct again ~ this one is wrong again = this one is the final correct answer ~and the final wrong one is here}
+
+// short answer with (more) specific feedback
+::Q7:: What's between orange and green in the spectrum?
+{m=yellow # correct! ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+// multiple choice question with varied feedback
+::Q8:: What's betw33n or4nge and green 1n the spectrum?
+{m=yellow ~red # wrong, it's yellow ~blue # wrong, it's yellow}
+
+::Q1a:: 1+1=2 {T}            // comments are okay here
+
+::Q1b::
+1+1=2
+{T}
+
+::Q1c:: 1+1=2 {
+T} 
+
+// multiple choice with specific feedback
+::Q2a:: What's between orange and green in the spectrum?
+{m
+=yellow
+# correct!
+~red
+# wrong, it's yellow
+~blue
+# wrong, it's yellow}
+
+// short answer question
+::Q3a:: Matthew's middle name? {=Timothy = Tim ~James ~Matthew}
+ 
+"""
+
+    parseGift(testStr8)
     
     pass

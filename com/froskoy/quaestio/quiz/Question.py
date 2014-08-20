@@ -25,11 +25,22 @@ class Question(object):
     @abstractmethod
     def toJsonDict(self):
         pass
-    
+
+    def toGiftString(self):
+        giftStr = ""
+        if self._name is not None:
+            giftStr = "::"+self._name+":: "
+        else:
+            giftStr = ""
+        if self._questionText is not None:
+            giftStr += self._questionText
+        giftStr += " {"
+        return giftStr
+        
     @abstractmethod
     def markAnswer(self, answer):
         pass
-        
+    
     def _validateText(self, text):
         if (not isinstance(text, str)):
             raise ValueError("Question text must be of type string")

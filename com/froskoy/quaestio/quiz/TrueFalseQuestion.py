@@ -66,6 +66,20 @@ class TrueFalseQuestion(Question):
                 'questiontext' : self._questionText,
                 'answers'      : map(lambda x : x.toJsonDict(), self.__answers)
                }
+        
+    def toGiftString(self):
+        """
+        Note: current GIFT representation does not allow for feedback
+              or partial credit.
+        """
+        giftStr = super(TrueFalseQuestion, self).toGiftString()
+        if (self.__isTrue):
+            giftStr += "T"
+        else:
+            giftStr += "F"
+        giftStr += "}"
+        return giftStr
+            
     
     def markAnswer(self, answer):
         raise NotImplementedError() 

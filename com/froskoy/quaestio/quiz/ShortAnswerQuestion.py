@@ -47,6 +47,15 @@ class ShortAnswerQuestion(Question):
                 'usecase'                  : self.__usecase,
                 'answers'                  : map(lambda x : x.toJsonDict(), self.__answers)
                }
+        
+    def toGiftString(self):
+        giftStr = super(ShortAnswerQuestion, self).toGiftString()
+        giftStr += " { "
+        for answer in self.__answers:
+            giftStr += answer.toGiftString()
+            giftStr += "\n"
+        giftStr += "}"
+        return giftStr
     
     def markAnswer(self, answer):
         raise NotImplementedError() 

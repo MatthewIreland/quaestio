@@ -48,3 +48,20 @@ class ShortAnswerQuestionAnswer(Answer):
                 'hidden'              : self.__hidden,
                 'usecase'             : self.__useCase }
         
+    def toGiftString(self):
+        """
+        Note: Partial credit not yet supported.
+        """
+        giftStr = ""
+        if (self.__fraction == 100): 
+            giftStr = "="
+        elif (self.__fraction == 0):
+            giftStr = "~"
+        else:
+            raise NotImplementedError()
+        giftStr += self.__text
+        if (self.__feedback is not None):
+            giftStr += " # "
+            giftStr += self.__feedback
+        return giftStr
+        

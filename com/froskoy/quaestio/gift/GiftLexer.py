@@ -8,7 +8,7 @@ import ply.lex as lex
 import re
 
 ##### DECLARATION OF GLOBALS
-__MODE_DEBUG__   = 1
+__MODE_DEBUG__   = 0
 ##### END DECLARATION OF GLOBALS
 
 ##### TOKEN DELCARATIONS
@@ -126,7 +126,7 @@ def t_error(t):
     raise TypeError("Unknown text at line %d '%s'" % (t.lexer.lineno, t.value))
 
 # ignore tabs
-t_ignore = '\t'
+t_ignore = '\t\r'
 ##### END TOKEN DEFINITIONS 
 
 
@@ -146,10 +146,11 @@ def lexGift(giftStr):
     #    for tok in iter(lexer.token(), None):
     #        print repr(tok.type), repr(tok.value)
     
-    while True:
-        tok = lexer.token()
-        if not tok: break      # No more input
-        print tok
+    if __MODE_DEBUG__:
+        while True:
+            tok = lexer.token()
+            if not tok: break      # No more input
+            print tok
             
             
             

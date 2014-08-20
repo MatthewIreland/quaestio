@@ -17,7 +17,7 @@ from com.froskoy.quaestio.quiz.ShortAnswerQuestionAnswer import ShortAnswerQuest
 from GiftLexer import tokens
 
 ##### DEFINITION OF GLOBALS
-__MODE_DEBUG__ = 1
+__MODE_DEBUG__ = 0
 questionName = None
 questions = []
 parserAnswers = []
@@ -62,7 +62,8 @@ class ParserShortAnswerQuestionBody:
         self.answers = answers
 
 def parserAddQuestion(question):
-    print "Adding question!!!"
+    if __MODE_DEBUG__:
+        print "Adding question!!!"
     global parserAnswers
     questions.append(question)
     parserAnswers = []    # TODO remove this global variable in favour of passing answers in a more tidy fashion (via p[0])
@@ -70,7 +71,8 @@ def parserAddQuestion(question):
 def parserConstructQuestion(name=None, questionBody=None):
     if (questionBody is None):
         raise InvalidQuestionBodyError("Question body must not be None!")
-    print name
+    if __MODE_DEBUG__:
+        print name
     if (questionBody.__class__ == ParserTrueFalseQuestionBody):
         return TrueFalseQuestion(questionText=questionBody.text,
                                  isTrue=questionBody.correct,
@@ -102,8 +104,9 @@ def parserConstructQuestion(name=None, questionBody=None):
 ##### PARSING RULES
 # quiz and quizbody
 def p_quiz(p):
-    'quiz : quizbody'
-    print "Adding quiz!"
+    'quiz : linegap quizbody'
+    if __MODE_DEBUG__:
+        print "Adding quiz!"
     p[0]=Quiz(name="A quiz converted from GIFT", description="The quiz has been converted from GIFT format")
     for question in questions:        # TODO move questions from global variable into quizbody, that is, p[1]
         p[0].addQuestion(question)
@@ -392,10 +395,13 @@ def parseGift(giftStr):
     
     # ... and parse
     result = parser.parse(giftStr, GiftLexer.lexer)
-    if result is not None:
-        print result.jsonSerialize()
-    else:
-        print("There were errors in the parse.")
+    if __MODE_DEBUG__:
+        if result is not None:
+            print result.jsonSerialize()
+        else:
+            print("There were errors in the parse.")
+    
+    return result
     
 """
 Quick test example

@@ -562,6 +562,10 @@ this time there are four correct answers {m =this one is correct = this one is a
 ::Q1c:: 1+1=2 {
 T} 
 
+::Q1d:: 1+1=2 {TRUE}            // comments are okay here
+
+::Q1e:: 1+1=2 {FALSE}            // comments are okay here
+
 // multiple choice with specific feedback
 ::Q2a:: What's between orange and green in the spectrum?
 {m
